@@ -1,0 +1,398 @@
+loadstring(game:HttpGet((function()
+    local scriptContent = [[
+        -- 手机端Roblox多功能脚本
+        local Players = game:GetService("Players")
+        local Player = Players.LocalPlayer
+        local Character = Player.Character or Player.CharacterAdded:Wait()
+        local Humanoid = Character:WaitForChild("Humanoid")
+        local RootPart = Character:WaitForChild("HumanoidRootPart")
+        local UIS = game:GetService("UserInputService")
+        local RunService = game:GetService("RunService")
+        local TweenService = game:GetService("TweenService")
+        
+        -- 等待角色加载完成
+        repeat wait() until Character and RootPart and Humanoid
+        
+        -- 创建手机优化GUI
+        local ScreenGui = Instance.new("ScreenGui")
+        local MainButton = Instance.new("TextButton")
+        local ControlFrame = Instance.new("Frame")
+        local Title = Instance.new("TextLabel")
+        local FlyBtn = Instance.new("TextButton")
+        local NoclipBtn = Instance.new("TextButton")
+        local SpeedBtn = Instance.new("TextButton")
+        local JumpBtn = Instance.new("TextButton")
+        local CloseBtn = Instance.new("TextButton")
+        local SpeedControls = Instance.new("Frame")
+        local SpeedUp = Instance.new("TextButton")
+        local SpeedDown = Instance.new("TextButton")
+        local SpeedDisplay = Instance.new("TextLabel")
+        
+        -- 移动控制按钮（飞行时使用）
+        local MoveFrame = Instance.new("Frame")
+        local UpBtn = Instance.new("TextButton")
+        local DownBtn = Instance.new("TextButton")
+        local ForwardBtn = Instance.new("TextButton")
+        local BackBtn = Instance.new("TextButton")
+        local LeftBtn = Instance.new("TextButton")
+        local RightBtn = Instance.new("TextButton")
+        
+        ScreenGui.Name = "MobileScriptGUI"
+        ScreenGui.Parent = game:GetService("CoreGui")
+        ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        
+        -- 主菜单按钮
+        MainButton.Name = "MainButton"
+        MainButton.Parent = ScreenGui
+        MainButton.Size = UDim2.new(0, 80, 0, 80)
+        MainButton.Position = UDim2.new(0, 20, 0.5, -40)
+        MainButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+        MainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MainButton.Text = "菜单"
+        MainButton.TextSize = 18
+        MainButton.BorderSizePixel = 0
+        MainButton.ZIndex = 10
+        
+        -- 控制面板
+        ControlFrame.Name = "ControlFrame"
+        ControlFrame.Parent = ScreenGui
+        ControlFrame.Size = UDim2.new(0, 280, 0, 350)
+        ControlFrame.Position = UDim2.new(0, 110, 0.5, -175)
+        ControlFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        ControlFrame.BorderSizePixel = 0
+        ControlFrame.Visible = false
+        
+        Title.Name = "Title"
+        Title.Parent = ControlFrame
+        Title.Size = UDim2.new(1, 0, 0, 40)
+        Title.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+        Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Title.Text = "手机多功能脚本"
+        Title.TextSize = 20
+        Title.BorderSizePixel = 0
+        
+        -- 功能按钮
+        local function createButton(name, text, position)
+            local btn = Instance.new("TextButton")
+            btn.Name = name
+            btn.Parent = ControlFrame
+            btn.Size = UDim2.new(0.85, 0, 0, 45)
+            btn.Position = position
+            btn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Text = text
+            btn.TextSize = 16
+            btn.BorderSizePixel = 0
+            return btn
+        end
+        
+        FlyBtn = createButton("FlyBtn", "✈️ 飞行: 关闭", UDim2.new(0.075, 0, 0.15, 0))
+        NoclipBtn = createButton("NoclipBtn", "🚪 穿墙: 关闭", UDim2.new(0.075, 0, 0.3, 0))
+        SpeedBtn = createButton("SpeedBtn", "⚡ 速度控制", UDim2.new(0.075, 0, 0.45, 0))
+        JumpBtn = createButton("JumpBtn", "🦘 无限跳: 关闭", UDim2.new(0.075, 0, 0.6, 0))
+        CloseBtn = createButton("CloseBtn", "❌ 关闭", UDim2.new(0.075, 0, 0.75, 0))
+        
+        -- 速度控制面板
+        SpeedControls.Name = "SpeedControls"
+        SpeedControls.Parent = ControlFrame
+        SpeedControls.Size = UDim2.new(0.85, 0, 0, 80)
+        SpeedControls.Position = UDim2.new(0.075, 0, 0.45, 0)
+        SpeedControls.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+        SpeedControls.BorderSizePixel = 0
+        SpeedControls.Visible = false
+        
+        SpeedDisplay = Instance.new("TextLabel")
+        SpeedDisplay.Parent = SpeedControls
+        SpeedDisplay.Size = UDim2.new(1, 0, 0.4, 0)
+        SpeedDisplay.BackgroundTransparency = 1
+        SpeedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
+        SpeedDisplay.Text = "速度: 16"
+        SpeedDisplay.TextSize = 18
+        
+        SpeedUp = Instance.new("TextButton")
+        SpeedUp.Parent = SpeedControls
+        SpeedUp.Size = UDim2.new(0.4, 0, 0.5, 0)
+        SpeedUp.Position = UDim2.new(0.05, 0, 0.5, 0)
+        SpeedUp.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+        SpeedUp.TextColor3 = Color3.fromRGB(255, 255, 255)
+        SpeedUp.Text = "增加 +5"
+        SpeedUp.TextSize = 14
+        
+        SpeedDown = Instance.new("TextButton")
+        SpeedDown.Parent = SpeedControls
+        SpeedDown.Size = UDim2.new(0.4, 0, 0.5, 0)
+        SpeedDown.Position = UDim2.new(0.55, 0, 0.5, 0)
+        SpeedDown.BackgroundColor3 = Color3.fromRGB(180, 80, 80)
+        SpeedDown.TextColor3 = Color3.fromRGB(255, 255, 255)
+        SpeedDown.Text = "减少 -5"
+        SpeedDown.TextSize = 14
+        
+        -- 飞行移动控制面板
+        MoveFrame.Name = "MoveFrame"
+        MoveFrame.Parent = ScreenGui
+        MoveFrame.Size = UDim2.new(0, 200, 0, 200)
+        MoveFrame.Position = UDim2.new(1, -220, 0.5, -100)
+        MoveFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        MoveFrame.BackgroundTransparency = 0.7
+        MoveFrame.BorderSizePixel = 0
+        MoveFrame.Visible = false
+        
+        -- 创建移动按钮
+        local function createMoveButton(name, text, position, size)
+            local btn = Instance.new("TextButton")
+            btn.Name = name
+            btn.Parent = MoveFrame
+            btn.Size = size
+            btn.Position = position
+            btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.Text = text
+            btn.TextSize = 16
+            btn.BorderSizePixel = 0
+            btn.Visible = false
+            return btn
+        end
+        
+        UpBtn = createMoveButton("UpBtn", "↑", UDim2.new(0.35, 0, 0, 0), UDim2.new(0.3, 0, 0.3, 0))
+        DownBtn = createMoveButton("DownBtn", "↓", UDim2.new(0.35, 0, 0.7, 0), UDim2.new(0.3, 0, 0.3, 0))
+        ForwardBtn = createMoveButton("ForwardBtn", "↑", UDim2.new(0.35, 0, 0.1, 0), UDim2.new(0.3, 0, 0.25, 0))
+        BackBtn = createMoveButton("BackBtn", "↓", UDim2.new(0.35, 0, 0.65, 0), UDim2.new(0.3, 0, 0.25, 0))
+        LeftBtn = createMoveButton("LeftBtn", "←", UDim2.new(0.05, 0, 0.35, 0), UDim2.new(0.25, 0, 0.3, 0))
+        RightBtn = createMoveButton("RightBtn", "→", UDim2.new(0.7, 0, 0.35, 0), UDim2.new(0.25, 0, 0.3, 0))
+        
+        -- 状态变量
+        local flying = false
+        local noclip = false
+        local infiniteJump = false
+        local currentSpeed = 16
+        local flyBodyVelocity, flyBodyGyro
+        local noclipConnection
+        local jumpConnection
+        
+        -- 飞行功能
+        local function startFlying()
+            flying = true
+            FlyBtn.Text = "✈️ 飞行: 开启"
+            FlyBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+            
+            -- 显示移动控制按钮
+            MoveFrame.Visible = true
+            UpBtn.Visible = true
+            DownBtn.Visible = true
+            ForwardBtn.Visible = true
+            BackBtn.Visible = true
+            LeftBtn.Visible = true
+            RightBtn.Visible = true
+            
+            flyBodyVelocity = Instance.new("BodyVelocity")
+            flyBodyGyro = Instance.new("BodyGyro")
+            
+            flyBodyVelocity.Parent = RootPart
+            flyBodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
+            flyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            
+            flyBodyGyro.Parent = RootPart
+            flyBodyGyro.MaxTorque = Vector3.new(40000, 40000, 40000)
+            flyBodyGyro.P = 1000
+            flyBodyGyro.D = 50
+            
+            local moveDirection = Vector3.new(0, 0, 0)
+            local flySpeed = currentSpeed
+            
+            -- 移动按钮事件
+            local function setButtonEvents(button, direction)
+                local connection
+                button.MouseButton1Down:Connect(function()
+                    moveDirection = moveDirection + direction
+                end)
+                button.MouseButton1Up:Connect(function()
+                    moveDirection = moveDirection - direction
+                end)
+                button.MouseLeave:Connect(function()
+                    moveDirection = moveDirection - direction
+                end)
+            end
+            
+            setButtonEvents(ForwardBtn, Vector3.new(0, 0, -1))
+            setButtonEvents(BackBtn, Vector3.new(0, 0, 1))
+            setButtonEvents(LeftBtn, Vector3.new(-1, 0, 0))
+            setButtonEvents(RightBtn, Vector3.new(1, 0, 0))
+            setButtonEvents(UpBtn, Vector3.new(0, 1, 0))
+            setButtonEvents(DownBtn, Vector3.new(0, -1, 0))
+            
+            -- 飞行循环
+            local flyConnection
+            flyConnection = RunService.Heartbeat:Connect(function()
+                if flying and RootPart then
+                    local camera = workspace.CurrentCamera
+                    flyBodyGyro.CFrame = camera.CFrame
+                    
+                    local cameraCFrame = camera.CFrame
+                    local rightVector = cameraCFrame.RightVector
+                    local lookVector = cameraCFrame.LookVector
+                    
+                    local velocity = (rightVector * moveDirection.X) + 
+                                   (Vector3.new(0, 1, 0) * moveDirection.Y) + 
+                                   (lookVector * moveDirection.Z)
+                    
+                    flyBodyVelocity.Velocity = velocity * flySpeed
+                else
+                    if flyConnection then
+                        flyConnection:Disconnect()
+                    end
+                end
+            end)
+        end
+        
+        local function stopFlying()
+            flying = false
+            FlyBtn.Text = "✈️ 飞行: 关闭"
+            FlyBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+            MoveFrame.Visible = false
+            
+            if flyBodyVelocity then
+                flyBodyVelocity:Destroy()
+            end
+            if flyBodyGyro then
+                flyBodyGyro:Destroy()
+            end
+        end
+        
+        -- 穿墙功能
+        local function startNoclip()
+            noclip = true
+            NoclipBtn.Text = "🚪 穿墙: 开启"
+            NoclipBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+            
+            noclipConnection = RunService.Stepped:Connect(function()
+                if noclip and Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                else
+                    if noclipConnection then
+                        noclipConnection:Disconnect()
+                    end
+                end
+            end)
+        end
+        
+        local function stopNoclip()
+            noclip = false
+            NoclipBtn.Text = "🚪 穿墙: 关闭"
+            NoclipBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+        end
+        
+        -- 速度控制
+        local function updateSpeed()
+            Humanoid.WalkSpeed = currentSpeed
+            SpeedDisplay.Text = "速度: " .. currentSpeed
+        end
+        
+        -- 无限跳功能
+        local function startInfiniteJump()
+            infiniteJump = true
+            JumpBtn.Text = "🦘 无限跳: 开启"
+            JumpBtn.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+            
+            jumpConnection = UIS.JumpRequest:Connect(function()
+                if infiniteJump then
+                    Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        end
+        
+        local function stopInfiniteJump()
+            infiniteJump = false
+            JumpBtn.Text = "🦘 无限跳: 关闭"
+            JumpBtn.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+            
+            if jumpConnection then
+                jumpConnection:Disconnect()
+            end
+        end
+        
+        -- 按钮事件
+        MainButton.MouseButton1Click:Connect(function()
+            ControlFrame.Visible = not ControlFrame.Visible
+        end)
+        
+        FlyBtn.MouseButton1Click:Connect(function()
+            if flying then
+                stopFlying()
+            else
+                startFlying()
+            end
+        end)
+        
+        NoclipBtn.MouseButton1Click:Connect(function()
+            if noclip then
+                stopNoclip()
+            else
+                startNoclip()
+            end
+        end)
+        
+        SpeedBtn.MouseButton1Click:Connect(function()
+            SpeedControls.Visible = not SpeedControls.Visible
+        end)
+        
+        SpeedUp.MouseButton1Click:Connect(function()
+            currentSpeed = math.min(currentSpeed + 5, 100)
+            updateSpeed()
+        end)
+        
+        SpeedDown.MouseButton1Click:Connect(function()
+            currentSpeed = math.max(currentSpeed - 5, 16)
+            updateSpeed()
+        end)
+        
+        JumpBtn.MouseButton1Click:Connect(function()
+            if infiniteJump then
+                stopInfiniteJump()
+            else
+                startInfiniteJump()
+            end
+        end)
+        
+        CloseBtn.MouseButton1Click:Connect(function()
+            stopFlying()
+            stopNoclip()
+            stopInfiniteJump()
+            ScreenGui:Destroy()
+        end)
+        
+        -- 初始化
+        updateSpeed()
+        
+        -- 角色重新生成时重新连接
+        Player.CharacterAdded:Connect(function(newCharacter)
+            Character = newCharacter
+            Humanoid = Character:WaitForChild("Humanoid")
+            RootPart = Character:WaitForChild("HumanoidRootPart")
+            
+            -- 重新应用设置
+            updateSpeed()
+            if flying then
+                stopFlying()
+                wait(1)
+                startFlying()
+            end
+            if noclip then
+                stopNoclip()
+                wait(1)
+                startNoclip()
+            end
+            if infiniteJump then
+                stopInfiniteJump()
+                wait(1)
+                startInfiniteJump()
+            end
+        end)
+        
+        print("手机端多功能脚本加载成功！")
+    ]]
+    return scriptContent
+end)()))()
